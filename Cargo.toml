@@ -1,0 +1,9 @@
+[package]
+name = "s3redirects"
+version = "0.1.0"
+authors = ["Alexander Reiff <alexander.reiff@me.com>"]
+
+[dependencies]
+csv = "1"
+serde = "1"
+serde_derive = "1"
