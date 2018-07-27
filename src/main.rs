@@ -4,13 +4,17 @@ extern crate serde;
 #[macro_use]
 extern crate serde_derive;
 
-use clap::{App, Arg};
+mod parser;
+mod writer;
+mod redirect_rule;
+
+use std::error::Error;
 use std::io;
 use std::process;
-use std::vec;
-use conf::Builder;
-use csv_parser::Parser;
-use redirect_rule::RedirectRule;
+use clap::{App, Arg};
+use writer::write_conf;
+use parser::Parser;
+use redirect_rule::{RedirectRule, build_conf};
 
 fn main() {
     // fetch file from S3
@@ -27,14 +31,16 @@ fn main() {
     // return exit_from_stale_file();
     // }
     // let parser = Parser::new(file.reader());
-    let parser = Parser::new(io::stdin());
+    let input = Box::new(io::stdin());
+    let parser = Parser::new(input);
+
     match parser.get_rules() {
         Ok(rules) => generate_conf(outfile, rules/*, file*/),
-        Err(err) => exit_from_parser(err)
+        Err(err) => exit_from_parser(err),
     }
 }
 
-fn build_cli() -> App {
+fn build_cli<'a, 'b>() -> App<'a, 'b> {
     App::new("s3redirects")
         .version("0.1.0")
         .arg(
@@ -54,8 +60,10 @@ fn build_cli() -> App {
         )
 }
 
-fn generate_conf(outfile: String, rules: Vec<RedirectRule>/*, file: File*/) -> () {
-    if let Err(err) = Builder::build_conf(outfile, rules) {
+fn generate_conf(outfile: &str, rules: Vec<RedirectRule>/*, file: File*/) -> () {
+    let conf = build_conf(rules);
+
+    if let Err(err) = write_conf(outfile, &conf) {
         exit_from_builder(err);
     } else {
         // println!("{}", file.etag());
@@ -63,7 +71,7 @@ fn generate_conf(outfile: String, rules: Vec<RedirectRule>/*, file: File*/) -> (
 }
 
 fn exit_from_stale_file() {
-    process::exit(3);
+    process::exit(3)
 }
 
 fn exit_from_parser(err: Error) {
