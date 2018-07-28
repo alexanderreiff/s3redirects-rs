@@ -24,3 +24,38 @@ impl Parser {
         Ok(rules)
     }
 }
+
+#[cfg(test)]
+mod parser_tests {
+    use super::*;
+
+    #[test]
+    fn it_returns_set_of_rules_for_valid_csv() {
+        let csv = "match_pattern,redirect_pattern
+^/resources/(.+)/subs(/.*)?$,/new-resources/$1/new-sub$2
+^/simple$,/short"
+                    .as_bytes();
+
+        let parser = Parser::new(Box::new(csv));
+
+        assert_eq!(
+            parser.get_rules().unwrap(),
+            vec![
+                RedirectRule::new("^/resources/(.+)/subs(/.*)?$", "/new-resources/$1/new-sub$2"),
+                RedirectRule::new("^/simple$", "/short"),
+            ]
+        );
+    }
+
+    #[test]
+    fn it_returns_error_for_invalid_csv() {
+        let csv = "match_pattern,redirect_pattern
+^/resources/(.+)/subs(/.*)?$;/new-resources/$1/new-sub$2
+^/simple$,/short"
+                    .as_bytes();
+
+        let parser = Parser::new(Box::new(csv));
+
+        assert!(parser.get_rules().is_err());
+    }
+}

@@ -1,10 +1,17 @@
-#[derive(Deserialize)]
+#[derive(Debug, Deserialize, Eq, PartialEq)]
 pub struct RedirectRule {
     match_pattern: String,
     redirect_pattern: String,
 }
 
 impl RedirectRule {
+    pub fn new(match_pattern: &str, redirect_pattern: &str) -> Self {
+        Self {
+            match_pattern: match_pattern.to_string(),
+            redirect_pattern: redirect_pattern.to_string()
+        }
+    }
+
     pub fn to_conf(&self) -> String {
         let mut conf = String::new();
         conf.push_str(&format!("location ~* {} {{\n", self.match_pattern));
@@ -28,10 +35,10 @@ mod redirect_rule_tests {
 
     #[test]
     fn it_generates_conf_string_for_a_rule() {
-        let rule = RedirectRule {
-            match_pattern: "^/resources/(.+)/subs(/.*)?$".to_string(),
-            redirect_pattern: "/new-resources/$1/new-sub$2".to_string(),
-        };
+        let rule = RedirectRule::new(
+            "^/resources/(.+)/subs(/.*)?$",
+            "/new-resources/$1/new-sub$2"
+        );
 
         assert_eq!(
             rule.to_conf(),
@@ -46,14 +53,11 @@ mod redirect_rule_tests {
     #[test]
     fn it_joins_conf_entries_from_multiple_rules() {
         let rules = vec![
-            RedirectRule {
-                match_pattern: "^/resources/(.+)/subs(/.*)?$".to_string(),
-                redirect_pattern: "/new-resources/$1/new-sub$2".to_string(),
-            },
-            RedirectRule {
-                match_pattern: "^/simple$".to_string(),
-                redirect_pattern: "/short".to_string(),
-            },
+            RedirectRule::new(
+                "^/resources/(.+)/subs(/.*)?$",
+                "/new-resources/$1/new-sub$2"
+            ),
+            RedirectRule::new("^/simple$", "/short"),
         ];
 
         assert_eq!(
