@@ -46,6 +46,7 @@ fn build_cli<'a, 'b>() -> App<'a, 'b> {
         .version("0.1.0")
         .arg(
             Arg::with_name("out")
+                .long("out")
                 .short("o")
                 .value_name("FILE")
                 .help("Nginx configuration output file path")
@@ -54,6 +55,7 @@ fn build_cli<'a, 'b>() -> App<'a, 'b> {
         )
         .arg(
             Arg::with_name("etag")
+                .long("etag")
                 .short("t")
                 .value_name("ETAG")
                 .help("Etag to use to check for fresh redirects")
