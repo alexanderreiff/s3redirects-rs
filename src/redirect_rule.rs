@@ -16,10 +16,10 @@ impl RedirectRule {
 
 pub fn build_conf(rules: Vec<RedirectRule>) -> String {
     rules
-    .iter()
-    .map(|r| r.to_conf())
-    .collect::<Vec<String>>()
-    .join("\n")
+        .iter()
+        .map(|r| r.to_conf())
+        .collect::<Vec<String>>()
+        .join("\n")
 }
 
 #[cfg(test)]
@@ -53,7 +53,7 @@ mod redirect_rule_tests {
             RedirectRule {
                 match_pattern: "^/simple$".to_string(),
                 redirect_pattern: "/short".to_string(),
-            }
+            },
         ];
 
         assert_eq!(

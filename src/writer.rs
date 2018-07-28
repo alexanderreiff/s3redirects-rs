@@ -15,6 +15,6 @@ pub fn write_conf(outfile: &str, contents: &str) -> EmptyResult {
 
     match file.write_all(contents.as_bytes()) {
         Ok(_) => Ok(()),
-        Err(err) => return Err(From::from(err))
+        Err(err) => return Err(From::from(err)),
     }
 }

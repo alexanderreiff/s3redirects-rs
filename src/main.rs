@@ -5,16 +5,16 @@ extern crate serde;
 extern crate serde_derive;
 
 mod parser;
-mod writer;
 mod redirect_rule;
+mod writer;
 
+use clap::{App, Arg};
+use parser::Parser;
+use redirect_rule::{build_conf, RedirectRule};
 use std::error::Error;
 use std::io;
 use std::process;
-use clap::{App, Arg};
 use writer::write_conf;
-use parser::Parser;
-use redirect_rule::{RedirectRule, build_conf};
 
 fn main() {
     // fetch file from S3
@@ -24,7 +24,7 @@ fn main() {
     // exit
     let matches = build_cli().get_matches();
     let outfile = matches.value_of("out").unwrap();
-    let etag    = matches.value_of("etag");
+    let etag = matches.value_of("etag");
 
     // let file = fetcher::fetch(etag);
     // if file.not_modified() {
@@ -35,7 +35,7 @@ fn main() {
     let parser = Parser::new(input);
 
     match parser.get_rules() {
-        Ok(rules) => generate_conf(outfile, rules/*, file*/),
+        Ok(rules) => generate_conf(outfile, rules /*, file*/),
         Err(err) => exit_from_parser(err),
     }
 }
@@ -49,18 +49,18 @@ fn build_cli<'a, 'b>() -> App<'a, 'b> {
                 .value_name("FILE")
                 .help("Nginx configuration output file path")
                 .required(true)
-                .takes_value(true)
+                .takes_value(true),
         )
         .arg(
             Arg::with_name("etag")
                 .short("t")
                 .value_name("ETAG")
                 .help("Etag to use to check for fresh redirects")
-                .takes_value(true)
+                .takes_value(true),
         )
 }
 
-fn generate_conf(outfile: &str, rules: Vec<RedirectRule>/*, file: File*/) -> () {
+fn generate_conf(outfile: &str, rules: Vec<RedirectRule> /*, file: File*/) -> () {
     let conf = build_conf(rules);
 
     if let Err(err) = write_conf(outfile, &conf) {

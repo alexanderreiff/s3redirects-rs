@@ -1,7 +1,7 @@
 use csv;
+use redirect_rule::RedirectRule;
 use std::error::Error;
 use std::io::Read;
-use redirect_rule::RedirectRule;
 
 pub struct Parser {
     reader: Box<Read>,
