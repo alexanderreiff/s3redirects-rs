@@ -8,13 +8,13 @@ impl RedirectRule {
     pub fn to_conf(&self) -> String {
         let mut conf = String::new();
         conf.push_str(&format!("location ~* {} {{\n", self.match_pattern));
-        conf.push_str(&format!("  return 301 {};\n", self.redirect_pattern));
+        conf.push_str(&format!("    return 301 {};\n", self.redirect_pattern));
         conf.push_str("}\n");
         conf
     }
 }
 
-pub fn build_conf(rules: Vec<RedirectRule>) -> String {
+pub fn build_conf(rules: &[RedirectRule]) -> String {
     rules
         .iter()
         .map(|r| r.to_conf())
@@ -36,7 +36,7 @@ mod redirect_rule_tests {
         assert_eq!(
             rule.to_conf(),
             "location ~* ^/resources/(.+)/subs(/.*)?$ {
-  return 301 /new-resources/$1/new-sub$2;
+    return 301 /new-resources/$1/new-sub$2;
 }
 "
                 .to_string()
@@ -57,9 +57,9 @@ mod redirect_rule_tests {
         ];
 
         assert_eq!(
-            build_conf(rules),
+            build_conf(&rules),
             "location ~* ^/resources/(.+)/subs(/.*)?$ {
-  return 301 /new-resources/$1/new-sub$2;
+    return 301 /new-resources/$1/new-sub$2;
 }
 
 location ~* ^/simple$ {

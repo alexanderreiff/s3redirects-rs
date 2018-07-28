@@ -10,11 +10,8 @@ mod writer;
 
 use clap::{App, Arg};
 use parser::Parser;
-use redirect_rule::{build_conf, RedirectRule};
-use std::error::Error;
 use std::io;
-use std::process;
-use writer::write_conf;
+// use std::process;
 
 fn main() {
     // fetch file from S3
@@ -24,20 +21,21 @@ fn main() {
     // exit
     let matches = build_cli().get_matches();
     let outfile = matches.value_of("out").unwrap();
-    let etag = matches.value_of("etag");
+    let _etag = matches.value_of("etag");
 
     // let file = fetcher::fetch(etag);
     // if file.not_modified() {
-    // return exit_from_stale_file();
+    // return process::exit(3);
     // }
     // let parser = Parser::new(file.reader());
     let input = Box::new(io::stdin());
     let parser = Parser::new(input);
 
-    match parser.get_rules() {
-        Ok(rules) => generate_conf(outfile, rules /*, file*/),
-        Err(err) => exit_from_parser(err),
-    }
+    let rules = parser.get_rules().expect("Error during CSV parsing");
+    let conf = redirect_rule::build_conf(&rules);
+    writer::write_conf(outfile, &conf).expect("Error during file generation");
+
+    // println!("{}", file.etag());
 }
 
 fn build_cli<'a, 'b>() -> App<'a, 'b> {
@@ -58,26 +56,4 @@ fn build_cli<'a, 'b>() -> App<'a, 'b> {
                 .help("Etag to use to check for fresh redirects")
                 .takes_value(true),
         )
-}
-
-fn generate_conf(outfile: &str, rules: Vec<RedirectRule> /*, file: File*/) -> () {
-    let conf = build_conf(rules);
-
-    if let Err(err) = write_conf(outfile, &conf) {
-        exit_from_builder(err);
-    } else {
-        // println!("{}", file.etag());
-    }
-}
-
-fn exit_from_stale_file() {
-    process::exit(3)
-}
-
-fn exit_from_parser(err: Box<Error>) {
-    panic!("Error during CSV parsing: {}", err)
-}
-
-fn exit_from_builder(err: Box<Error>) {
-    panic!("Error during file generation: {}", err);
 }

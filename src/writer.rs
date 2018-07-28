@@ -3,9 +3,7 @@ use std::fs::File;
 use std::io::Write;
 use std::path::Path;
 
-type EmptyResult = Result<(), Box<Error>>;
-
-pub fn write_conf(outfile: &str, contents: &str) -> EmptyResult {
+pub fn write_conf(outfile: &str, contents: &str) -> Result<(), Box<Error>> {
     let path = Path::new(outfile);
 
     let mut file = match File::create(&path) {
@@ -15,6 +13,6 @@ pub fn write_conf(outfile: &str, contents: &str) -> EmptyResult {
 
     match file.write_all(contents.as_bytes()) {
         Ok(_) => Ok(()),
-        Err(err) => return Err(From::from(err)),
+        Err(err) => Err(From::from(err)),
     }
 }
