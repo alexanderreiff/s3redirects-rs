@@ -12,6 +12,7 @@ use clap::{App, Arg};
 use parser::Parser;
 use std::io;
 // use std::process;
+use writer::Writer;
 
 fn main() {
     // fetch file from S3
@@ -33,7 +34,9 @@ fn main() {
 
     let rules = parser.get_rules().expect("Error during CSV parsing");
     let conf = redirect_rule::build_conf(&rules);
-    writer::write_conf(outfile, &conf).expect("Error during file generation");
+
+    let writer = Writer::new(outfile);
+    writer.write(&conf).expect("Error during file generation");
 
     // println!("{}", file.etag());
 }
