@@ -10,11 +10,11 @@ pub fn write_conf(outfile: &str, contents: &str) -> EmptyResult {
 
     let mut file = match File::create(&path) {
         Ok(file) => file,
-        Err(err) => return Err(err),
+        Err(err) => return Err(From::from(err)),
     };
 
     match file.write_all(contents.as_bytes()) {
         Ok(_) => Ok(()),
-        Err(err) => return Err(err)
+        Err(err) => return Err(From::from(err))
     }
 }

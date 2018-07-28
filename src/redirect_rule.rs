@@ -16,7 +16,9 @@ impl RedirectRule {
 
 pub fn build_conf(rules: Vec<RedirectRule>) -> String {
     rules
+    .iter()
     .map(|r| r.to_conf())
+    .collect::<Vec<String>>()
     .join("\n")
 }
 

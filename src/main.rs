@@ -74,10 +74,10 @@ fn exit_from_stale_file() {
     process::exit(3)
 }
 
-fn exit_from_parser(err: Error) {
+fn exit_from_parser(err: Box<Error>) {
     panic!("Error during CSV parsing: {}", err)
 }
 
-fn exit_from_builder(err: Error) {
+fn exit_from_builder(err: Box<Error>) {
     panic!("Error during file generation: {}", err);
 }

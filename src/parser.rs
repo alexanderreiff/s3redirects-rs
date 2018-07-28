@@ -12,16 +12,14 @@ impl Parser {
         Self { reader }
     }
 
-    pub fn get_rules(&self) -> Result<Vec<RedirectRule>, Box<Error>> {
+    pub fn get_rules(self) -> Result<Vec<RedirectRule>, Box<Error>> {
         let mut parser = csv::Reader::from_reader(self.reader);
+        let mut rules = Vec::new();
 
-        let rules = parser
-            .deserialize()
-            .map(|row| {
-                let rule: RedirectRule = row?;
-                rule
-            })
-            .collect::<Vec<RedirectRule>>();
+        for row in parser.deserialize() {
+            let rule: RedirectRule = row?;
+            rules.push(rule);
+        }
 
         Ok(rules)
     }
