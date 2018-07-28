@@ -5,10 +5,11 @@ pub struct RedirectRule {
 }
 
 impl RedirectRule {
+    #[cfg(test)]
     pub fn new(match_pattern: &str, redirect_pattern: &str) -> Self {
         Self {
             match_pattern: match_pattern.to_string(),
-            redirect_pattern: redirect_pattern.to_string()
+            redirect_pattern: redirect_pattern.to_string(),
         }
     }
 
@@ -37,7 +38,7 @@ mod redirect_rule_tests {
     fn it_generates_conf_string_for_a_rule() {
         let rule = RedirectRule::new(
             "^/resources/(.+)/subs(/.*)?$",
-            "/new-resources/$1/new-sub$2"
+            "/new-resources/$1/new-sub$2",
         );
 
         assert_eq!(
@@ -55,7 +56,7 @@ mod redirect_rule_tests {
         let rules = vec![
             RedirectRule::new(
                 "^/resources/(.+)/subs(/.*)?$",
-                "/new-resources/$1/new-sub$2"
+                "/new-resources/$1/new-sub$2",
             ),
             RedirectRule::new("^/simple$", "/short"),
         ];

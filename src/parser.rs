@@ -34,14 +34,17 @@ mod parser_tests {
         let csv = "match_pattern,redirect_pattern
 ^/resources/(.+)/subs(/.*)?$,/new-resources/$1/new-sub$2
 ^/simple$,/short"
-                    .as_bytes();
+            .as_bytes();
 
         let parser = Parser::new(Box::new(csv));
 
         assert_eq!(
             parser.get_rules().unwrap(),
             vec![
-                RedirectRule::new("^/resources/(.+)/subs(/.*)?$", "/new-resources/$1/new-sub$2"),
+                RedirectRule::new(
+                    "^/resources/(.+)/subs(/.*)?$",
+                    "/new-resources/$1/new-sub$2",
+                ),
                 RedirectRule::new("^/simple$", "/short"),
             ]
         );
@@ -52,7 +55,7 @@ mod parser_tests {
         let csv = "match_pattern,redirect_pattern
 ^/resources/(.+)/subs(/.*)?$;/new-resources/$1/new-sub$2
 ^/simple$,/short"
-                    .as_bytes();
+            .as_bytes();
 
         let parser = Parser::new(Box::new(csv));
 

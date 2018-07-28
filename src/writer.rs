@@ -10,7 +10,7 @@ pub struct Writer {
 impl Writer {
     pub fn new(outfile: &str) -> Self {
         Self {
-            outfile: outfile.to_string()
+            outfile: outfile.to_string(),
         }
     }
 
