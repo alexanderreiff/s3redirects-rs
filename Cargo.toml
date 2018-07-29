@@ -6,5 +6,8 @@ authors = ["Alexander Reiff <alexander.reiff@me.com>"]
 [dependencies]
 clap = "2.32"
 csv = "1"
+futures = "0.1"
+rusoto_core = "0.32.0"
+rusoto_s3 = "0.32.0"
 serde = "1"
 serde_derive = "1"
