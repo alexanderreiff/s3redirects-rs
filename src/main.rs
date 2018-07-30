@@ -9,12 +9,12 @@ extern crate serde_derive;
 
 mod parser;
 mod redirect_rule;
-mod s3_fetcher;
+mod s3;
 mod writer;
 
 use clap::{App, Arg};
 use parser::Parser;
-use s3_fetcher::FileError;
+use s3::FileError;
 use std::process;
 use writer::Writer;
 
@@ -23,7 +23,7 @@ fn main() {
     let outfile = matches.value_of("out").unwrap();
     let etag = matches.value_of("etag");
 
-    let file = s3_fetcher::fetch(etag);
+    let file = s3::fetch(etag);
     if let Err(err) = file {
         return handle_file_errors(err);
     }
@@ -69,6 +69,7 @@ fn handle_file_errors(err: FileError) {
     match err {
         FileError::NotFound => panic!("File not found"),
         FileError::NotModified => process::exit(3),
+        FileError::Unauthorized(err) => panic!("Auth failed: {}", err),
         FileError::Unknown(err) => panic!("Unknown fetch error occurred: {}", err),
     }
 }

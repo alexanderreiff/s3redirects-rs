@@ -1,8 +1,11 @@
+use super::creds::{self, CredentialsProvider};
 use futures::{stream::Stream, Future};
-use rusoto_core::Region;
+use rusoto_core::reactor::RequestDispatcher;
 use rusoto_s3::{GetObjectError, GetObjectRequest, S3, S3Client, StreamingBody};
 use std::error::Error;
 use std::io::Cursor;
+
+const S3_FILE_KEY: &str = "redirect_rules/latest.csv";
 
 pub struct File {
     etag: Option<String>,
@@ -23,14 +26,19 @@ impl File {
 pub enum FileError {
     NotFound,
     NotModified,
+    Unauthorized(Box<Error>),
     Unknown(Box<Error>),
 }
 
 pub fn fetch(etag: Option<&str>) -> Result<File, FileError> {
-    // TODO: Region env var
-    let client = S3Client::simple(Region::UsWest2);
+    let client = build_s3_client();
     let request = build_s3_request(etag);
-    let response = client.get_object(&request).sync();
+
+    if let Err(err) = request {
+        return Err(err);
+    }
+
+    let response = client.get_object(&request.unwrap()).sync();
 
     if let Err(err) = response {
         return Err(normalize_s3_error(err, etag));
@@ -54,17 +62,28 @@ pub fn fetch(etag: Option<&str>) -> Result<File, FileError> {
     })
 }
 
-fn build_s3_request(etag: Option<&str>) -> GetObjectRequest {
+fn build_s3_client() -> S3Client<CredentialsProvider, RequestDispatcher> {
+    S3Client::new(
+        RequestDispatcher::default(),
+        CredentialsProvider,
+        creds::region(),
+    )
+}
+
+fn build_s3_request(etag: Option<&str>) -> Result<GetObjectRequest, FileError> {
     let if_none_match = match etag {
         Some(etag) => Some(etag.to_string()),
         None => None,
     };
 
-    GetObjectRequest {
-        if_none_match,
-        bucket: "ar-redirects-test".to_string(),
-        key: "latest.csv".to_string(),
-        ..Default::default()
+    match creds::bucket() {
+        Ok(bucket) => Ok(GetObjectRequest {
+            bucket,
+            if_none_match,
+            key: S3_FILE_KEY.to_string(),
+            ..Default::default()
+        }),
+        Err(err) => Err(FileError::Unauthorized(From::from(err))),
     }
 }
 
@@ -83,7 +102,7 @@ fn normalize_s3_error(err: GetObjectError, etag: Option<&str>) -> FileError {
     match err {
         GetObjectError::NoSuchKey(_) => FileError::NotFound,
         GetObjectError::HttpDispatch(err) => FileError::Unknown(From::from(err)),
-        GetObjectError::Credentials(err) => FileError::Unknown(From::from(err)),
+        GetObjectError::Credentials(err) => FileError::Unauthorized(From::from(err)),
         GetObjectError::Validation(err) => FileError::Unknown(From::from(err)),
         GetObjectError::Unknown(err) => {
             match etag {
