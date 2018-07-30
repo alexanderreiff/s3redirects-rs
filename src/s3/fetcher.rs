@@ -5,16 +5,20 @@ use rusoto_s3::{GetObjectError, GetObjectRequest, S3, S3Client, StreamingBody};
 use std::error::Error;
 use std::io::Cursor;
 
+/// Represents the fetched S3 object
 pub struct File {
     etag: Option<String>,
     bytes: Vec<u8>,
 }
 
 impl File {
+    /// Consumes the File struct and returns a Read-friendly Cursor struct containing the File's
+    /// byte stream
     pub fn into_reader(self) -> Cursor<Box<[u8]>> {
         Cursor::new(self.bytes.into_boxed_slice())
     }
 
+    /// Returns the fetched File's ETag value
     pub fn etag(&self) -> Option<String> {
         self.etag.clone()
     }
@@ -28,6 +32,11 @@ pub enum FileError {
     Unknown(Box<Error>),
 }
 
+/// Given an S3 file key, an optionally an ETag value to compare against the remote, this will
+/// attempt to pull the object from the S3 bucket (set via environment variables). If the provided
+/// ETag matches the server value, a `FileError::NotModified` error result is returned. If the file
+/// is found to be fresh and populated, a `File` struct is returned. Otherwise, a `FileError` is
+/// returned describing the fetch error.
 pub fn fetch(infile: &str, etag: Option<&str>) -> Result<File, FileError> {
     let client = build_s3_client();
     let request = build_s3_request(infile, etag);

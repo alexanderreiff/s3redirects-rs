@@ -1,3 +1,4 @@
+/// Represents a single redirect rule to be converted to an Nginx configuration block
 #[derive(Debug, Deserialize, Eq, PartialEq)]
 pub struct RedirectRule {
     match_pattern: String,
@@ -13,6 +14,8 @@ impl RedirectRule {
         }
     }
 
+    /// Generates an Nginx location block returning a 301 redirect based on the RedirectRule
+    /// patterns.
     pub fn to_conf(&self) -> String {
         let mut conf = String::new();
         conf.push_str(&format!("location ~* {} {{\n", self.match_pattern));
@@ -22,6 +25,8 @@ impl RedirectRule {
     }
 }
 
+/// Given a slice of RedirectRule structs, it generates the Nginx location block for each rule and
+/// joins then together into a single conf file String.
 pub fn build_conf(rules: &[RedirectRule]) -> String {
     rules
         .iter()

@@ -1,18 +1,23 @@
+//! Contains struct to parse CSV stream into redirect rules
 use csv;
 use redirect_rule::RedirectRule;
 use std::error::Error;
 use std::io::Read;
 
+/// Represents a container for a Read struct to be parsed into a set of redirect rules
 pub struct Parser {
     reader: Box<Read>,
 }
 
 impl Parser {
+    /// Creates a new Parser struct from a Boxed Read struct
     pub fn new(reader: Box<Read>) -> Self {
         Self { reader }
     }
 
-    pub fn get_rules(self) -> Result<Vec<RedirectRule>, Box<Error>> {
+    /// Consumes the Parser instance, parses the CSV reader and, on success, returns a Vec of
+    /// RedirectRule structs corresponding to the rows in the CSV stream.
+    pub fn into_rules(self) -> Result<Vec<RedirectRule>, Box<Error>> {
         let mut parser = csv::Reader::from_reader(self.reader);
         let mut rules = Vec::new();
 

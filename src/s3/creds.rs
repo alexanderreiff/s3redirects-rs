@@ -9,6 +9,7 @@ const AWS_SECRET_ACCESS_KEY: &str = "REDIRECTS_AWS_SECRET_ACCESS_KEY";
 const S3_BUCKET: &str = "REDIRECTS_S3_BUCKET";
 const S3_REGION: &str = "REDIRECTS_S3_REGION";
 
+/// Fetch bucket name from the environment variables
 pub fn bucket() -> Result<String, CredentialsError> {
     match get_env(S3_BUCKET) {
         Some(bucket) => Ok(bucket),
@@ -16,12 +17,16 @@ pub fn bucket() -> Result<String, CredentialsError> {
     }
 }
 
+/// Fetch bucket region from the environment variables, returning `rusoto_core::Region::default()`
+/// if not provided or invalid.
 pub fn region() -> Region {
     get_env(S3_REGION).map_or_else(Region::default, |reg| {
         reg.parse().ok().unwrap_or_else(Region::default)
     })
 }
 
+/// Implementation of `rusoto_core::ProvideAwsCredentials` to fetch Redirect-scoped AWS
+/// credentials from the environment variables
 pub struct CredentialsProvider;
 
 impl ProvideAwsCredentials for CredentialsProvider {

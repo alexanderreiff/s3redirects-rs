@@ -1,3 +1,5 @@
+//! A tool that generates a Nginx configuration file from a CSV list of redirect rules stored in
+//! Amazon S3.
 extern crate clap;
 extern crate csv;
 extern crate futures;
@@ -35,7 +37,7 @@ fn main() {
     let reader = file.into_reader();
     let parser = Parser::new(Box::new(reader));
 
-    let rules = parser.get_rules().expect("Error during CSV parsing");
+    let rules = parser.into_rules().expect("Error during CSV parsing");
     let conf = redirect_rule::build_conf(&rules);
 
     let writer = Writer::new(outfile);
