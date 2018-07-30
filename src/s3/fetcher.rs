@@ -5,8 +5,6 @@ use rusoto_s3::{GetObjectError, GetObjectRequest, S3, S3Client, StreamingBody};
 use std::error::Error;
 use std::io::Cursor;
 
-const S3_FILE_KEY: &str = "redirect_rules/latest.csv";
-
 pub struct File {
     etag: Option<String>,
     bytes: Vec<u8>,
@@ -30,9 +28,9 @@ pub enum FileError {
     Unknown(Box<Error>),
 }
 
-pub fn fetch(etag: Option<&str>) -> Result<File, FileError> {
+pub fn fetch(infile: &str, etag: Option<&str>) -> Result<File, FileError> {
     let client = build_s3_client();
-    let request = build_s3_request(etag);
+    let request = build_s3_request(infile, etag);
 
     if let Err(err) = request {
         return Err(err);
@@ -70,17 +68,12 @@ fn build_s3_client() -> S3Client<CredentialsProvider, RequestDispatcher> {
     )
 }
 
-fn build_s3_request(etag: Option<&str>) -> Result<GetObjectRequest, FileError> {
-    let if_none_match = match etag {
-        Some(etag) => Some(etag.to_string()),
-        None => None,
-    };
-
+fn build_s3_request(infile: &str, etag: Option<&str>) -> Result<GetObjectRequest, FileError> {
     match creds::bucket() {
         Ok(bucket) => Ok(GetObjectRequest {
             bucket,
-            if_none_match,
-            key: S3_FILE_KEY.to_string(),
+            if_none_match: etag.map(String::from),
+            key: infile.to_string(),
             ..Default::default()
         }),
         Err(err) => Err(FileError::Unauthorized(From::from(err))),

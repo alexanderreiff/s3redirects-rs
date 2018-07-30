@@ -18,12 +18,15 @@ use s3::FileError;
 use std::process;
 use writer::Writer;
 
+const DEFAULT_S3_KEY: &str = "redirect_rules/latest.csv";
+
 fn main() {
     let matches = build_cli().get_matches();
+    let infile = matches.value_of("in").unwrap();
     let outfile = matches.value_of("out").unwrap();
     let etag = matches.value_of("etag");
 
-    let file = s3::fetch(etag);
+    let file = s3::fetch(infile, etag);
     if let Err(err) = file {
         return handle_file_errors(err);
     }
@@ -45,7 +48,17 @@ fn main() {
 
 fn build_cli<'a, 'b>() -> App<'a, 'b> {
     App::new("s3redirects")
+        .about("Generates Nginx configuration file from CSV list of redirect rules stored in S3")
         .version("0.1.0")
+        .arg(
+            Arg::with_name("in")
+                .long("in")
+                .short("i")
+                .value_name("S3-KEY")
+                .help("S3 file key for redirect rules source")
+                .takes_value(true)
+                .default_value(DEFAULT_S3_KEY),
+        )
         .arg(
             Arg::with_name("out")
                 .long("out")
